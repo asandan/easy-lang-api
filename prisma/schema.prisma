@@ -9,9 +9,9 @@ datasource db {
 
 enum Status {
   IN_PROGRESS
+  NOT_STARTED
   TRANSLATED
-  UNTRANSLATED
-  DELAYED
+  OVERDUE
 }
 
 enum Role {
@@ -24,8 +24,8 @@ model Account {
   id       Int    @id @default(autoincrement())
   email    String @unique
   password String
-  name     String
-  surname  String
+  name     String?
+  surname  String?
   role     Role
 
   avatarPath String?
@@ -57,7 +57,7 @@ model Translator {
 
 model Order {
   id              Int    @id @default(autoincrement())
-  text            String
+  title            String
   status          Status
   totalPages      Int
   translatedPages Int
@@ -68,8 +68,9 @@ model Order {
   translator Translator @relation(fields: [translatorId], references: [id])
   customer   Customer   @relation(fields: [customerId], references: [id])
 
-  startedAt  DateTime
-  finishedAt DateTime
+  startedAt  DateTime?
+  deadlineAt DateTime
+  finishedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
