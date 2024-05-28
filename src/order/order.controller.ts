@@ -1,9 +1,13 @@
-import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Res } from "@nestjs/common";
-import { OrderQuery } from "./dto";
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Query, Res, UploadedFiles, UseInterceptors, ValidationPipe } from "@nestjs/common";
+import { OrderQuery, UploadTranslations } from "./dto";
 import { Order, Role } from "@prisma/client";
 import { Response } from "express";
 import { OrderService } from "./Order.service";
 import { PrismaService } from "nestjs-prisma";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { v4 as uuidv4 } from 'uuid';
+import { extname } from "path";
+import { diskStorage } from "multer";
 
 
 @Controller('order')
@@ -41,6 +45,28 @@ export class OrderController {
       );
     } catch (e) {
       throw new BadRequestException(e.message);
+    }
+  }
+
+  @Post()
+  @UseInterceptors(FilesInterceptor('images', 1000, {
+    storage: diskStorage({
+      destination: './storage/translations/',
+      filename: (_, file, callback) => {
+        const randomName = uuidv4();
+        return callback(null, `${randomName}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadTranslations(@UploadedFiles() images: Express.Multer.File[], @Body(ValidationPipe) dto: UploadTranslations) {
+    try {
+      const imagePaths = images.map(file => ({
+        path: file.path,
+      }));
+      console.log(dto)
+      return await this.orderService.uploadTranslations(dto, imagePaths);
+    } catch (e) {
+      throw new BadRequestException(e);
     }
   }
 }

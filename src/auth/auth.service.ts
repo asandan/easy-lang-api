@@ -44,12 +44,21 @@ export class AuthService {
   async signin(dto: LoginDto) {
     try {
       const { email, password } = dto;
-
+      
       const user = await this.prismaService.account.findUnique({
         where: {
           email,
         },
       });
+
+      const translatorId = await this.prismaService.translator.findUnique({
+        where: {
+          accountId: user.id
+        },
+        select: {
+          id: true
+        }
+      })
 
       if (!user) {
         throw new ForbiddenException("User doesn't exist");
@@ -60,7 +69,8 @@ export class AuthService {
       if (!match) {
         throw new ForbiddenException('Invalid credentials');
       }
-
+      delete user.id;
+      user.id = translatorId.id;
       return user;
     } catch (e) {
       throw new Error(e);

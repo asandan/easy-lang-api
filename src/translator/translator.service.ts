@@ -8,12 +8,22 @@ export class TranslatorService {
 
   async getTranslatorStats(translatorId: number) {
     try {
-      const { id } = await this.prismaService.translator.findUnique({
+      const { id, accountId } = await this.prismaService.translator.findUnique({
         where: {
           id: translatorId,
         },
         select: {
           id: true,
+          accountId: true,
+        }
+      });
+
+      const { avatarPath } = await this.prismaService.account.findUnique({
+        where: {
+          id: accountId
+        },
+        select: {
+          avatarPath: true,
         }
       });
 
@@ -61,6 +71,7 @@ export class TranslatorService {
         totalOrdersOverdue,
         totalOrders,
         totalOrdersNotStarted,
+        avatarPath
       }
     } catch (e) {
       throw new BadRequestException(e);

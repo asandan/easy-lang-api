@@ -20,6 +20,15 @@ enum Role {
   ADMIN
 }
 
+model Tranlation {
+  id Int @id @default(autoincrement())
+  path String
+
+  orderId Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
 model Account {
   id       Int    @id @default(autoincrement())
   email    String @unique
@@ -71,6 +80,8 @@ model Order {
   startedAt  DateTime?
   deadlineAt DateTime
   finishedAt DateTime?
+
+  translations Tranlation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
